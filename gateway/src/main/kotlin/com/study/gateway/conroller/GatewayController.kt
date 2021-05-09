@@ -78,7 +78,7 @@ class GatewayController @Autowired constructor(
 
         val uri = UriComponentsBuilder
             .fromUriString(favoritesServiceUri)
-            .path("/favorites/add")
+            .path("/favorites")
             .toUriString()
         val body = ObjectMapper().createObjectNode().apply {
             put("bookId", bookId)
@@ -95,7 +95,7 @@ class GatewayController @Autowired constructor(
 
         val uri = UriComponentsBuilder
             .fromUriString(favoritesServiceUri)
-            .path("/favorites/delete")
+            .path("/favorites")
             .toUriString()
         val body = ObjectMapper().createObjectNode().apply {
             put("bookId", bookId)

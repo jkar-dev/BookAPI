@@ -20,7 +20,7 @@ class FavoritesController @Autowired constructor(
         return ResponseEntity.ok().body(books)
     }
 
-    @PostMapping("/add")
+    @PostMapping
     fun addToFavorites(
         @RequestBody
         addRequest: Request
@@ -29,7 +29,7 @@ class FavoritesController @Autowired constructor(
         return ResponseEntity.ok().body(Message(result))
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping
     fun deleteFromFavorites(
         @RequestBody
         deleteRequest: Request
