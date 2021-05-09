@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "book.service.uri",
+      "type": "java.lang.String",
+      "description": "URI of book service."
+    },
+    {
+      "name": "favorites.service.uri",
+      "type": "java.lang.String",
+      "description": "URI of favorites service."
+    }
+  ]
+}

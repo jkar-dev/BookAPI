@@ -1,0 +1,52 @@
+version: '2'
+
+services:
+    
+  gateway:
+    image: gateway-docker:latest
+    container_name: gateway
+    build:
+      context: ./gateway
+      dockerfile: ./gateway/Dockerfile
+    ports:
+    - "8080:8080"
+    depends_on:
+      - book-service
+      - favorites-service
+
+  book-service:
+    image: book-service-docker:latest
+    container_name: book-service
+    build:
+      context: ./book-service
+    ports:
+    - "8081:8081"
+    depends_on:
+      - db
+      
+  favorites-service:
+    image: favorites-service-docker:latest
+    container_name: favorites-service
+    build:
+      context: ./favorites-service
+      dockerfile: ./favorites-service/Dockerfile
+    ports:
+    - "8082:8082"
+    depends_on:
+      - db
+          
+  db:
+    image: postgres:latest
+    container_name: db
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${USER}
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_DB=books
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - 9411:9411
