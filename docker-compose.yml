@@ -34,6 +34,16 @@ services:
     - "8082:8082"
     depends_on:
       - db
+      
+  auth-service:
+    image: auth-docker:latest
+    container_name: auth
+    build:
+      context: ./auth
+    ports:
+    - "5000:5000"
+    depends_on:
+      - db
           
   db:
     image: postgres:latest
@@ -50,3 +60,5 @@ services:
     container_name: zipkin
     ports:
       - 9411:9411
+      
+      
