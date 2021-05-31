@@ -19,3 +19,27 @@ CREATE TABLE IF NOT EXISTS favorites
     id           SERIAL NOT NULL,
     book_id      INT NOT NULL UNIQUE
 );
+
+
+CREATE SCHEMA "auth" AUTHORIZATION postgres;
+GRANT ALL ON SCHEMA "auth" TO PUBLIC;
+GRANT ALL ON SCHEMA "auth" TO postgres;
+
+CREATE TABLE IF NOT EXISTS "auth".services
+(
+    name         VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO "auth".services(name)
+	VALUES ('gateway'), ('book-service'), ('favorites-service');
+
+CREATE TABLE IF NOT EXISTS "auth".permissions
+(
+	id           SERIAL NOT NULL,
+    name_from    VARCHAR(50) NOT NULL,
+	name_to      VARCHAR(50) NOT NULL
+);
+
+INSERT INTO "auth".permissions(name_from, name_to)
+	VALUES ('gateway', 'book-service'),
+			('gateway', 'favorites-service');

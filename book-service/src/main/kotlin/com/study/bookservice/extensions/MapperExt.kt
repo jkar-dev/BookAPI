@@ -1,4 +1,4 @@
-package com.study.bookservice.extentions
+package com.study.bookservice.extensions
 
 import com.study.bookservice.dto.Book
 import com.study.bookservice.dto.BookDetails

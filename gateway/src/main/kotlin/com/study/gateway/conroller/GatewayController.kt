@@ -20,7 +20,7 @@ class GatewayController @Autowired constructor(
     client: HttpClient,
     tracer : Tracer,
     environment: Environment
-) : BaseController(client, tracer) {
+) : BaseController(client, tracer, environment) {
 
     private val bookServiceUri = environment["book.service.uri"] ?: throw IllegalArgumentException()
     private val favoritesServiceUri = environment["favorites.service.uri"] ?: throw IllegalArgumentException()

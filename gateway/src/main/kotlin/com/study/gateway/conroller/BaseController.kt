@@ -1,6 +1,7 @@
 package com.study.gateway.conroller
 
 import com.study.gateway.dto.ErrorResponse
+import com.study.gateway.extensions.addTracing
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -8,6 +9,8 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.cloud.sleuth.Tracer
+import org.springframework.core.env.Environment
+import org.springframework.core.env.get
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 
@@ -17,8 +20,13 @@ sealed class RequestResult {
     object InternalError : RequestResult()
 }
 
-abstract class BaseController(private val client: HttpClient, private val tracer : Tracer) {
+abstract class BaseController(
+    private val client: HttpClient,
+    private val tracer : Tracer,
+    environment: Environment) {
 
+    private val serviceName : String = environment["spring.application.name"] ?: throw IllegalArgumentException()
+    private val authUrl : String = environment["auth.service.url"] ?: throw IllegalArgumentException()
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun sendRequest(
@@ -26,6 +34,12 @@ abstract class BaseController(private val client: HttpClient, private val tracer
         method: HttpMethod,
         body: Any? = null
     ): ResponseEntity<Any> = runBlocking {
+        val token = getToken()
+        if (token == null) {
+            val errorResponse = ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
+            return@runBlocking ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
+        }
+
         val result = try {
             val response = client.request<HttpResponse>(uriString) {
                 this.method = method
@@ -33,10 +47,8 @@ abstract class BaseController(private val client: HttpClient, private val tracer
                     this.body = body
                     contentType(ContentType.Application.Json)
                 }
-                header("X-B3-TraceId", tracer.currentSpan()?.context()?.traceId())
-                header("X-B3-ParentSpanId", tracer.currentSpan()?.context()?.parentId())
-                header("X-B3-SpanId", tracer.currentSpan()?.context()?.spanId())
-                header("X-B3-Sampled", tracer.currentSpan()?.context()?.sampled())
+                addTracing(tracer.currentSpan()?.context())
+                header("Authorization", token)
             }
             if (response.status == HttpStatusCode.OK) {
                 RequestResult.Success(response.readText())
@@ -64,6 +76,21 @@ abstract class BaseController(private val client: HttpClient, private val tracer
                 val errorResponse = ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
                 ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse)
             }
+        }
+    }
+
+    private suspend fun getToken(): String? {
+        logger.info("Getting access token")
+        return try {
+            val response = client.post<HttpResponse>(authUrl) {
+                addTracing(tracer.currentSpan()?.context())
+                body = serviceName
+            }
+            if (response.status == HttpStatusCode.OK) response.readText()
+            else null
+        } catch (e: Exception) {
+            logger.error("An error has occurred: ${e.message}", e)
+            null
         }
     }
 }

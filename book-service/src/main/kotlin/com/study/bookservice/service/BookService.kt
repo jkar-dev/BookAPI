@@ -3,7 +3,7 @@ package com.study.bookservice.service
 import com.study.bookservice.dao.BookDao
 import com.study.bookservice.dto.Book
 import com.study.bookservice.dto.BookDetails
-import com.study.bookservice.extentions.mapToDto
+import com.study.bookservice.extensions.mapToDto
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
